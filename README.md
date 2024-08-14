@@ -1,2 +1,2 @@
 # Caregence
-AI powered app built with Convex
+AI Powered Healthcare App Built with Convex
