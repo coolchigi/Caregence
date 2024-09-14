@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function HCP() {
-  const providers = useQuery(api.user.getProviders);
+  const providers = useQuery(api.provider.getProviders);
   
   return (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
