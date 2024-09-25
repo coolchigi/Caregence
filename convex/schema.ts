@@ -9,6 +9,7 @@ export const userSchema = {
   name: v.optional(v.string()),
   emailVerified: v.optional(v.number()),
   image: v.optional(v.string()),
+  username: v.optional(v.string()),
 };
 
 export const voteType = v.union(v.literal("UP"), v.literal("DOWN"));
@@ -89,45 +90,55 @@ export default defineSchema({
   posts: defineTable({
     postId: v.id("posts"),
     userId: v.id("users"),
+    username: v.union(v.null(), v.string()),
     title: v.string(),
     content: v.string(),
-    isArchived: v.boolean(),
-    createdAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_archived", ["isArchived"])
-    .index("by_createdAt", ["createdAt"]),
+    .index("by_username", ["username"]),
   
   comments: defineTable({
     commentId: v.id("comments"),
     postId: v.id("posts"),
     userId: v.id("users"),
     content: v.string(),
-    isArchived: v.boolean(),
-    createdAt: v.number(),
+    parentComment: v.optional(v.id("comments")),
   })
-    .index("by_user", ["userId"])
     .index("by_post", ["postId"])
-    .index("by_archived", ["isArchived"])
-    .index("by_createdAt", ["createdAt"]),
-  
-  reports: defineTable({
-    reportId: v.id("reports"),
-    postId: v.optional(v.id("posts")),
-    commentId: v.optional(v.id("comments")),
+    .index("by_user", ["userId"])
+    .index("by_comment", ["parentComment"])
+    .index("by_post_comment", ["postId", "parentComment"]),
+
+    comment_vote: defineTable({
     userId: v.id("users"),
-    reason: v.string(),
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_post", ["postId"])
-    .index("by_comment", ["commentId"])
-    .index("by_createdAt", ["createdAt"]),
+    postId: v.id("posts"),
+    commentId: v.id("comments"),
+    voteType: voteType,
+  }),
+  
 
     votes: defineTable({
     voteType: voteType,
     userId: v.id("users"),
     postId: v.id("posts"),
-    groupId: v.id("group"),
-  })
+    groupId: v.id("group"),  
+  }),
+
+  apiUsage: defineTable({
+    userId: v.id("users") ,
+    count: v.number(),
+  }).index("by_userId", ["userId"]),
+
+  chatConversations: defineTable({
+    userId: v.id("users"),
+    messages: v.array(
+      v.object({
+        type: v.union(v.literal("user"), v.literal("ai"), v.literal("system")),
+        content: v.string(),
+        timestamp: v.number(),
+      })
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
 });
